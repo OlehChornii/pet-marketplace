@@ -1,0 +1,596 @@
+openapi: 3.0.3
+info:
+  title: Pet Marketplace API
+  version: "1.0.0"
+  description: REST API для Pet Marketplace — чат, користувачі, оголошення, адопції, аналітика, платежі.
+servers:
+  - url: /api
+    description: Local API root (relative to app)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      example:
+        error: "Invalid token"
+        message: "Token expired"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+      required: [id, email]
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    Pet:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        status:
+          type: string
+        shelter_id:
+          type: integer
+      required: [id, name, category]
+
+    Adoption:
+      type: object
+      properties:
+        id:
+          type: integer
+        pet_id:
+          type: integer
+        user_id:
+          type: integer
+        status:
+          type: string
+        message:
+          type: string
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, text, createdAt]
+
+    AnalyticsOverview:
+      type: object
+      properties:
+        topEndpoints:
+          type: array
+          items:
+            type: object
+            properties:
+              endpoint:
+                type: string
+              count:
+                type: integer
+        requests:
+          type: integer
+        errors:
+          type: integer
+        avgDuration:
+          type: number
+
+    TimeSeriesPoint:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: number
+
+    TimeSeriesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSeriesPoint'
+        trend:
+          type: object
+          properties:
+            direction:
+              type: string
+              enum: [rising, falling, stable]
+            percent:
+              type: number
+
+paths:
+  /chat:
+    get:
+      summary: Отримати список повідомлень чату
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, id]
+            default: createdAt
+        - name: order
+          in: query
+          schema:
+            type: integer
+            enum: [1, -1]
+            default: -1
+      responses:
+        '200':
+          description: Масив повідомлень
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatMessage'
+        '500':
+          $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Створити повідомлення у чаті
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                name:
+                  type: string
+                role:
+                  type: string
+                text:
+                  type: string
+              required: [text]
+      responses:
+        '201':
+          description: Повідомлення створено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+        '400':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /pets:
+    get:
+      summary: Отримати список тварин
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Список тварин
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pet'
+    post:
+      summary: Створити нове оголошення (потрібна авторизація)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+      responses:
+        '201':
+          description: Оголошення створено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '401':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /pets/{id}:
+    get:
+      summary: Отримати оголошення по id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Оголошення
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '404':
+          $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Оновити оголошення (auth)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+      responses:
+        '200':
+          description: Updated pet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '401':
+          $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Видалити оголошення (auth)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /users/register:
+    post:
+      summary: Реєстрація користувача
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                name:
+                  type: string
+              required: [email, password]
+      responses:
+        '201':
+          description: Користувач створений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas\User'
+        '400':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /users/login:
+    post:
+      summary: Логін — повертає JWT і користувача
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required: [email, password]
+      responses:
+        '200':
+          description: Токен та дані користувача
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /users/profile:
+    get:
+      summary: Отримати профіль поточного користувача
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Оновити профіль (auth)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /adoptions:
+    get:
+      summary: Отримати заявки поточного користувача (auth)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Adoption'
+    post:
+      summary: Створити заявку на всиновлення
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pet_id:
+                  type: integer
+                shelter_id:
+                  type: integer
+                message:
+                  type: string
+              required: [pet_id, shelter_id]
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adoption'
+        '400':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /adoptions/check/{petId}:
+    get:
+      summary: Перевірка чи існує заявка у користувача для petId
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Дані існуючої заявки або null
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Adoption'
+                  - type: 'null'
+
+  /admin/pets/pending:
+    get:
+      summary: Отримати список оголошень, що очікують на схвалення (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pet'
+
+  /admin/adoptions/{id}:
+    put:
+      summary: Оновлення статусу заявки (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                admin_notes:
+                  type: string
+              required: [status]
+      responses:
+        '200':
+          description: Updated application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adoption'
+
+  /admin/analytics/overview:
+    get:
+      summary: Отримати огляд аналітики (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOverview'
+        '500':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/analytics/timeseries:
+    get:
+      summary: Отримати часовий ряд метрики
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [requests, errors, avgDuration]
+        - name: range
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [24h, 7d, 30d]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSeriesResponse'
+        '400':
+          $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/analytics/top-endpoints:
+    get:
+      summary: Отримати топ ендпойнтів за кількістю запитів
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    endpoint:
+                      type: string
+                    count:
+                      type: integer
+
+  /payments/create-session:
+    post:
+      summary: Створити сесію платежу (stripe)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Сесія створена
+        '400':
+          $ref: '#/components/schemas/ErrorResponse'
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: chat
+    description: Чат повідомлення
+  - name: users
+    description: Користувачі та авторизація
+  - name: pets
+    description: Тварини та оголошення
+  - name: adoptions
+    description: Заявки на всиновлення
+  - name: admin
+    description: Адмінські ендпойти (аналітика, модерація)
+  - name: payments
+    description: Платежі
