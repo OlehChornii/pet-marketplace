@@ -12,9 +12,9 @@ const server = app.listen(PORT, () => {
 ╠════════════════════════════════════════════╣
 ║  Port:    ${PORT}                             ║
 ║  Env:     ${process.env.NODE_ENV || 'development'}                      ║
-║  Status:  ✅ Ready                          ║
-║  Payment: ${process.env.STRIPE_SECRET_KEY ? '✅ Stripe' : '⚠️  Not configured'}                         ║
-║  Analytics: ✅ Enabled                      ║
+║  Status:  ✅ Ready                         ║
+║  Payment: ${process.env.STRIPE_SECRET_KEY ? '✅ Stripe' : '⚠️  Not configured'}                        ║
+║  Analytics: ✅ Enabled                     ║
 ╚════════════════════════════════════════════╝
   `);
 });
