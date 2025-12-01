@@ -18,8 +18,8 @@
      npm install
      ```
 2. Налаштувати змінні оточення
-   - Сервер: редагувати `server/.env` або створити на основі `.env.test`.
-   - Клієнт: редагувати `client/.env` (зазначити `REACT_APP_API_URL` якщо потрібно).
+   - Сервер: створити `server/.env` з змінними оточення PORT,CLIENT_URL,ALLOWED_ORIGINS,DB_HOST,DB_PORT,DB_NAME,DB_PASSWORD,JWT_SECRET,SESSION_SECRET,REFRESH_TOKEN_EXPIRY,HUGGINGFACE_API_KEY,HUGGINGFACE_MODEL,STRIPE_SECRET_KEY,STRIPE_PUBLISHABLE_KEY.
+   - Клієнт: створити `client/.env` і зазначити `REACT_APP_API_URL`.
 3. Запустити у двох терміналах
    - Сервер:
      ```sh
