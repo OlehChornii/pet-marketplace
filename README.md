@@ -1,166 +1,157 @@
-# Pet Marketplace — Документація
+# Pet Marketplace — Документація проекту
 
-## Коротке пояснення
+Короткий огляд
+- Монорепозиторій з клієнтом (React) та бекендом (Express + PostgreSQL).
+- Основні модулі: чат, оголошення тварин, адопції, аналітика, платежі.
+- OpenAPI специфікація: [server/openapi.yaml](server/openapi.yaml).
 
-Проєкт "Pet Marketplace" — веб-додаток (Create React App) для продажу/прийняття тварин. Цей README містить все необхідне для запуску, розробки, тестування та деплою.
+Швидкий старт (локально)
+1. Встановити залежності
+   - Сервер:
+     ```sh
+     cd server
+     npm install
+     ```
+   - Клієнт:
+     ```sh
+     cd client
+     npm install
+     ```
+2. Налаштувати змінні оточення
+   - Сервер: редагувати `server/.env` або створити на основі `.env.test`.
+   - Клієнт: редагувати `client/.env` (зазначити `REACT_APP_API_URL` якщо потрібно).
+3. Запустити у двох терміналах
+   - Сервер:
+     ```sh
+     cd server
+     npm start
+     ```
+     Точка запуску: [`server/src/server.js`](server/src/server.js).
+   - Клієнт:
+     ```sh
+     cd client
+     npm start
+     ```
+     Точка входу: [`client/src/index.js`](client/src/index.js).
 
-## Основні вимоги
-
-- Node.js >= 16 (рекомендується LTS)
-- npm або yarn
-- Git
-
-## Швидкий старт
-
-1. Клонувати репозиторій:
-
-   ```bash
-   git clone <repo-url>
-   cd pet-marketplace
-   ```
-
-2. Встановити залежності:
-
-   ```bash
-   npm install
-   # або
-   yarn
-   ```
-
-3. Запустити в режимі розробки:
-
-   ```bash
-   npm start
-   # або
-   yarn start
-   ```
-
-   Відкрийте http://localhost:3000
-
-## Сценарії (npm scripts)
-
-- `npm start` — запуск дев-сервера (CRA).
-- `npm run build` — створення production-білду в папці `build`.
-- `npm test` — запуск тестів (Jest).
-- `npm run lint` — запуск ESLint.
-- `npm run format` — запуск Prettier (якщо налаштовано).
-
-## Налаштування оточення (.env)
-
-Створіть файл `.env` в корені проєкту (не комітити секрети). Приклади змінних:
-
-```env
-# filepath: .env.example
-REACT_APP_API_URL=https://api.example.com
-REACT_APP_MAPS_KEY=your_maps_api_key
-NODE_ENV=development
+Білд фронтенду
+```sh
+cd client
+npm run build
 ```
+Результат збірки: `client/build/` (статичні файли).
 
-Перезапустіть dev-сервер після зміни `.env`.
+Архітектура — важливі файли та символи
+- Сервер (Express)
+  - Вхід/конфіг: [`server/src/app.js`](server/src/app.js) — middleware, CORS, Helmet, сесії, роутинг.
+  - Сервер: [`server/src/server.js`](server/src/server.js).
+  - Роутинг: папка — [`server/src/routes/`](server/src/routes). Приклади: [`server/src/routes/chat.js`](server/src/routes/chat.js), [`server/src/routes/analytics.js`](server/src/routes/analytics.js), [`server/src/routes/adoptions.js`](server/src/routes/adoptions.js).
+  - Контролери: [`server/src/controllers/`](server/src/controllers). Головні:
+    - [`adoptionsController`](server/src/controllers/adoptionsController.js)
+    - [`analyticsController`](server/src/controllers/analyticsController.js)
+  - Сервіси:
+    - Аналітика: клас [`AnalyticsService`](server/src/services/analyticsService.js) — реалізує запис у JSON, агрегати, timeseries, виявлення трендів. Файл: [server/src/services/analyticsService.js](server/src/services/analyticsService.js).
+    - AI: клас [`AIService`](server/src/services/aiService.js) — LLM/HF виклики, рекомендації. Файл: [server/src/services/aiService.js](server/src/services/aiService.js).
+    - Інтелект: [`IntelligenceEngine`](server/src/services/intelligenceEngine.js) — оркестрація обробки чат-запитів. Файл: [server/src/services/intelligenceEngine.js](server/src/services/intelligenceEngine.js).
+    - NLP: [`NLPService`](server/src/services/nlpService.js) — простий аналіз запитів/настроїв. Файл: [server/src/services/nlpService.js](server/src/services/nlpService.js).
+  - Middleware:
+    - Логування запитів у аналітику: [`requestLogger`](server/src/middleware/requestLogger.js). Файл: [server/src/middleware/requestLogger.js](server/src/middleware/requestLogger.js).
+    - Auth: [`server/src/middleware/auth.js`](server/src/middleware/auth.js).
+  - Конфіг бази: [`server/src/config/database.js`](server/src/config/database.js).
+  - Логи / дані:
+    - Аналітика: [`server/data/analytics.json`](server/data/analytics.json), агрегати: [`server/data/analytics_aggregates.json`](server/data/analytics_aggregates.json).
+    - Чат: [`server/data/chat_messages.json`](server/data/chat_messages.json).
+  - Скрипти обслуговування: `server/scripts/` (наприклад, [`repairAnalyticsJSON.js`](server/scripts/repairAnalyticsJSON.js)).
 
-## Структура проекту (коротко)
+- Клієнт (React)
+  - Точка входу: [`client/src/index.js`](client/src/index.js).
+  - Головний компонент: [`client/src/App.jsx`](client/src/App.jsx).
+  - HTTP wrapper та API файли: [`client/src/services/api.js`](client/src/services/api.js).
+    - Важливі експортовані функції/об'єкти:
+      - [`getAnalyticsOverview`](client/src/services/api.js)
+      - [`getAnalyticsTimeseries`](client/src/services/api.js)
+      - [`getAnalyticsTopEndpoints`](client/src/services/api.js)
+      - [`adoptionAPI.createApplication`](client/src/services/api.js)
+      - [`adoptionAPI.checkExistingApplication`](client/src/services/api.js)
+    - Файл: [client/src/services/api.js](client/src/services/api.js).
+  - Компоненти / сторінки:
+    - Чат: [`client/src/components/ChatBot.jsx`](client/src/components/ChatBot.jsx)
+    - Рекомендації: [`client/src/pages/PetRecommendation.jsx`](client/src/pages/PetRecommendation.jsx)
+    - Адопції: [`client/src/pages/Adopt/AdoptDetail.jsx`](client/src/pages/Adopt/AdoptDetail.jsx)
+    - Адмін дашборд: [`client/src/pages/Admin/Dashboard.jsx`](client/src/pages/Admin/Dashboard.jsx)
+    - Сторінки тварин: приклади — [`client/src/pages/Dogs/DogDetail.jsx`](client/src/pages/Dogs/DogDetail.jsx), [`client/src/pages/Cats/CatDetail.jsx`](client/src/pages/Cats/CatDetail.jsx), [`client/src/pages/Others/OtherDetail.jsx`](client/src/pages/Others/OtherDetail.jsx).
 
-- public/ — статичні файли
-- src/
-  - components/ — перезапускаємі UI-компоненти
-  - pages/ — маршрути/сторінки
-  - services/ — робота з API (axios/fetch)
-  - hooks/ — кастомні React-хуки
-  - store/ або context/ — менеджмент стану (Redux/Context)
-  - styles/ — глобальні стилі або дизайн-система
-  - utils/ — утиліти, валідатори
-  - App.tsx / index.tsx — точка входу
+OpenAPI / API
+- Повна схема: [server/openapi.yaml](server/openapi.yaml).
+- Ключові ендпоїнти (приклади з OpenAPI):
+  - Чат: `GET/POST /api/chat` — специфікація в [server/openapi.yaml](server/openapi.yaml).
+  - Адопції: `POST /api/adoptions` (створення заявки) — бекенд реалізація в [`server/src/controllers/adoptionsController.js`](server/src/controllers/adoptionsController.js).
+  - Аналітика (адмін): `GET /api/admin/analytics/overview` і `GET /api/admin/analytics/timeseries` — контролер: [`server/src/controllers/analyticsController.js`](server/src/controllers/analyticsController.js). Клієнт викликає через [`getAnalyticsOverview`](client/src/services/api.js) та [`getAnalyticsTimeseries`](client/src/services/api.js).
 
-## Архітектурні рекомендації
+Безпека та конфігурація
+- Helmet CSP налаштований у [`server/src/app.js`](server/src/app.js).
+- CORS контролюється через `ALLOWED_ORIGINS` у [`server/src/app.js`](server/src/app.js).
+- Сесії зберігаються в Postgres через `connect-pg-simple` (конфіг в [`server/src/app.js`](server/src/app.js)).
+- Rate limiter — функція `createLimiter` у [`server/src/app.js`](server/src/app.js) (поки закоментовано).
+- Stripe/webhook:
+  - Webhook route: `/api/payments/webhook` (реєстрація в `app.js`, маршрут: [`server/src/routes/payments.js`](server/src/routes/payments.js)).
+  - Статус webhook: `/api/payments/webhook-status` (див. `app.js`).
 
-- Компоненти: дрібні, тестовані, без побічних ефектів.
-- Сторінки: збирають компоненти та підключають дані.
-- API: винести логіку запитів у `services/api.ts`.
-- State: використовувати Redux Toolkit або Context + hooks; локальний state у компонентах.
-- Стилі: CSS Modules, SASS або styled-components — узгодити командно.
+Потоки даних / важливі сценарії
+- Створення заявки на всиновлення:
+  - Фронтенд: форма в [`client/src/pages/Adopt/AdoptDetail.jsx`](client/src/pages/Adopt/AdoptDetail.jsx) викликає [`adoptionAPI.createApplication`](client/src/services/api.js).
+  - Бекенд: обробка в [`server/src/controllers/adoptionsController.js`](server/src/controllers/adoptionsController.js) — валідації, перевірка статусу тварини та вставка в БД.
+- Чат-бот:
+  - UI: [`client/src/components/ChatBot.jsx`](client/src/components/ChatBot.jsx) — надсилає запит на `/api/chat/query`.
+  - Сервер: маршрут [`server/src/routes/chat.js`](server/src/routes/chat.js) викликає [`IntelligenceEngine.processQuery`](server/src/services/intelligenceEngine.js) і [`AIService`](server/src/services/aiService.js) / [`NLPService`](server/src/services/nlpService.js) для класифікації/обробки.
+- Аналітика:
+  - Middleware [`requestLogger`](server/src/middleware/requestLogger.js) збирає entry і викликає [`AnalyticsService.record`](server/src/services/analyticsService.js).
+  - Аналітичні API: [`analyticsController.overview`](server/src/controllers/analyticsController.js) і [`AnalyticsService.getTimeseries`](server/src/services/analyticsService.js).
 
-## API і авторизація
+Тестування
+- Серверні тести: у папці [`server/tests/`](server/tests) (наприклад `analytics.test.js`, `payment.test.js`).
+- Клієнт: Jest + React Testing Library (`client/src/App.test.jsx`, `client/src/setupTests.js`).
+- Запуск тестів:
+  - Сервер: `cd server && npm test`
+  - Клієнт: `cd client && npm test`
 
-- Всі запити мають працювати через central API service.
-- Зберігайте токени у secure httpOnly cookie або в пам'яті (ні в localStorage для критичних даних), залежно від архітектури бекенду.
-- Обробляйте помилки (401 -> редирект на логін; 403 -> показ повідомлення).
+Журнали та відновлення даних
+- Логер: [`server/src/utils/logger.js`](server/src/utils/logger.js).
+- Логи зберігаються в: `server/logs/`.
+- Якщо аналітика пошкоджена — див. скрипти `server/scripts/repairAnalyticsJSON.js` та `server/scripts/backupAnalytics.js`. Дані аналітики: [`server/data/analytics.json`](server/data/analytics.json).
 
-## Тестування
+Розгортання
+- Backend: Dockerize або запуск Node (див. `server/src/server.js`). Забезпечити змінні оточення (`DATABASE_URL`, `SESSION_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `ALLOWED_ORIGINS`).
+- Frontend: `npm run build` у `client` -> розгорнути `client/build` на CDN / web server або віддати через сервер.
 
-- Unit: Jest + React Testing Library.
-- Інтеграції: тестувати сервіси API за допомогою msw/mock.
-- E2E: Cypress (опціонально). Приклад запуску:
+Нотатки для розробника / дебаг
+- Переконайтесь, що ENV містить `REACT_APP_API_URL` якщо фронтенд має звертатись не відносно.
+- Для перевірки Stripe webhook локально: `stripe listen --forward-to localhost:5000/api/payments/webhook` (додатково див. `app.js` і маршрут webhook).
+- Якщо аналітика порожня — перевірити права запису над `server/data/` та логи (`server/logs/`).
 
-```bash
-npm test
-# або
-yarn test
-```
+Корисні посилання у репозиторії
+- OpenAPI: [server/openapi.yaml](server/openapi.yaml)
+- Серверний App: [server/src/app.js](server/src/app.js)
+- Серверний Entrypoint: [server/src/server.js](server/src/server.js)
+- Analytics service: [`AnalyticsService`](server/src/services/analyticsService.js) — [server/src/services/analyticsService.js](server/src/services/analyticsService.js)
+- AI service: [`AIService`](server/src/services/aiService.js) — [server/src/services/aiService.js](server/src/services/aiService.js)
+- Intelligence engine: [`IntelligenceEngine`](server/src/services/intelligenceEngine.js) — [server/src/services/intelligenceEngine.js](server/src/services/intelligenceEngine.js)
+- Request logger middleware: [`requestLogger`](server/src/middleware/requestLogger.js) — [server/src/middleware/requestLogger.js](server/src/middleware/requestLogger.js)
+- Adoptions controller: [server/src/controllers/adoptionsController.js](server/src/controllers/adoptionsController.js)
+- API client (frontend): [client/src/services/api.js](client/src/services/api.js) — експортовані утиліти, наприклад [`getAnalyticsOverview`](client/src/services/api.js)
+- Chat UI: [client/src/components/ChatBot.jsx](client/src/components/ChatBot.jsx)
+- Рекомендації: [client/src/pages/PetRecommendation.jsx](client/src/pages/PetRecommendation.jsx)
+- Adopt detail (фронтенд): [client/src/pages/Adopt/AdoptDetail.jsx](client/src/pages/Adopt/AdoptDetail.jsx)
 
-## Лінтинг і форматування
+Додаткові поради
+- Додавати тести для нової логіки (unit / integration).
+- Дотримуватись ESLint/Prettier (конфіги в репозиторії, якщо є).
+- Для проблем з CORS — перевірити `ALLOWED_ORIGINS` в [`server/src/app.js`](server/src/app.js).
+- Для відлагодження аналітики — дивитись `server/logs/` та `server/data/analytics.json`.
 
-- Рекомендується ESLint + Prettier.
-- Додайте husky + lint-staged для перевірки у pre-commit.
+Контакти / внесок
+- Процес: fork -> branch -> PR; додати тести для нової логіки.
+- Для питань про архітектуру — подивитись контролери та сервіси, особливо: [`server/src/controllers/analyticsController.js`](server/src/controllers/analyticsController.js), [`server/src/services/analyticsService.js`](server/src/services/analyticsService.js), [`server/src/services/intelligenceEngine.js`](server/src/services/intelligenceEngine.js).
 
-## Білд і деплой
-
-- `npm run build` згенерує production-папку `build`.
-- Деплой на:
-  - Vercel / Netlify (простий drag & drop або інтеграція через репозиторій).
-  - Docker: створіть Dockerfile, який виконує `npm run build` та сервер для статичних файлів (nginx або serve). Приклад Dockerfile (огляд):
-
-```dockerfile
-# Multistage build
-FROM node:16 as builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-
-FROM nginx:stable-alpine
-COPY --from=builder /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-## Безпека
-
-- Не комітьте `.env` з секретами.
-- Валідуйте і санітизовуйте всі дані з бекенду.
-- Використовуйте HTTPS у production.
-
-## Поради щодо відлагодження
-
-- Перевірте консоль браузера та мережеві запити (DevTools).
-- Якщо `npm start` видає помилки після зміни `.env`, перезапустіть dev-сервер.
-- Проблеми з портом 3000: вказати інший через `PORT` в `.env` або змінити у скриптах.
-
-## Контриб'юція
-
-- Форк -> feature branch -> PR.
-- Дотримуйтесь стилю коду (ESLint/Prettier).
-- Пишіть короткий і зрозумілий опис PR та чек-лист змін.
-- Додавайте тести для нової логіки.
-
-## Часті помилки
-
-- Застарілі пакети: оновлюйте через `npm outdated`.
-- Конфлікти стилів: перевірте порядок імпорту CSS.
-- Проблеми з кешем: `rm -rf node_modules && npm i` або `npm cache clean --force`.
-
-## Контакти та ліцензія
-
-- Підтримка: вказати internal email або github issues.
-- Ліцензія: вкажіть тип ліцензії у файлі LICENSE (MIT/ISC тощо).
-
-## Додаткові ресурси
-
-- React: https://reactjs.org
-- CRA docs: https://create-react-app.dev
-- Redux Toolkit: https://redux-toolkit.js.org
-- React Testing Library: https://testing-library.com/react
-
-## Оновлення README
-
-Оновлюйте цей файл при зміні структури, нових скриптів або налаштувань оточення.
+-----
+Цей README цілиться дати швидкий огляд і карту коду — для детальної інформації відкрийте вказані файли.
