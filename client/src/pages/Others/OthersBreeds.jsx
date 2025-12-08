@@ -251,7 +251,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     animation: 'fadeInUp 0.5s ease forwards',
-    opacity: '0',
   },
   
   imageContainer: {

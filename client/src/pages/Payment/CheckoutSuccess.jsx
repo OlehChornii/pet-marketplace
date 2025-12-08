@@ -301,7 +301,6 @@ const checkoutSuccessStyles = {
     fontSize: '3.5rem',
     fontWeight: '700',
     animation: 'fadeIn 0.6s ease 0.3s forwards',
-    opacity: 0
   },
   title: {
     fontSize: '2.25rem',

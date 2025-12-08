@@ -387,7 +387,6 @@ const styles = {
     flexDirection: 'column',
     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     animation: 'slideUp 0.6s ease forwards',
-    opacity: '0',
     border: '1px solid rgba(157, 192, 139, 0.1)',
   },
   

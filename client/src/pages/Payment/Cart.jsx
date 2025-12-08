@@ -365,7 +365,6 @@ const styles = {
     border: '1px solid #F0F0F0',
     transition: 'all 0.3s ease',
     animation: 'slideIn 0.4s ease forwards',
-    opacity: 0
   },
   itemCardRemoving: {
     opacity: 0,

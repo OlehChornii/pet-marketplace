@@ -61,7 +61,6 @@ npm run build
   - Логи / дані:
     - Аналітика: [`server/data/analytics.json`](server/data/analytics.json), агрегати: [`server/data/analytics_aggregates.json`](server/data/analytics_aggregates.json).
     - Чат: [`server/data/chat_messages.json`](server/data/chat_messages.json).
-  - Скрипти обслуговування: `server/scripts/` (наприклад, [`repairAnalyticsJSON.js`](server/scripts/repairAnalyticsJSON.js)).
 
 - Клієнт (React)
   - Точка входу: [`client/src/index.js`](client/src/index.js).
@@ -92,7 +91,7 @@ OpenAPI / API
 - Helmet CSP налаштований у [`server/src/app.js`](server/src/app.js).
 - CORS контролюється через `ALLOWED_ORIGINS` у [`server/src/app.js`](server/src/app.js).
 - Сесії зберігаються в Postgres через `connect-pg-simple` (конфіг в [`server/src/app.js`](server/src/app.js)).
-- Rate limiter — функція `createLimiter` у [`server/src/app.js`](server/src/app.js) (поки закоментовано).
+- Rate limiter — функція `createLimiter` у [`server/src/app.js`](server/src/app.js).
 - Stripe/webhook:
   - Webhook route: `/api/payments/webhook` (реєстрація в `app.js`, маршрут: [`server/src/routes/payments.js`](server/src/routes/payments.js)).
   - Статус webhook: `/api/payments/webhook-status` (див. `app.js`).
@@ -108,17 +107,9 @@ OpenAPI / API
   - Middleware [`requestLogger`](server/src/middleware/requestLogger.js) збирає entry і викликає [`AnalyticsService.record`](server/src/services/analyticsService.js).
   - Аналітичні API: [`analyticsController.overview`](server/src/controllers/analyticsController.js) і [`AnalyticsService.getTimeseries`](server/src/services/analyticsService.js).
 
-Тестування
-- Серверні тести: у папці [`server/tests/`](server/tests) (наприклад `analytics.test.js`, `payment.test.js`).
-- Клієнт: Jest + React Testing Library (`client/src/App.test.jsx`, `client/src/setupTests.js`).
-- Запуск тестів:
-  - Сервер: `cd server && npm test`
-  - Клієнт: `cd client && npm test`
-
 Журнали та відновлення даних
 - Логер: [`server/src/utils/logger.js`](server/src/utils/logger.js).
 - Логи зберігаються в: `server/logs/`.
-- Якщо аналітика пошкоджена — див. скрипти `server/scripts/repairAnalyticsJSON.js` та `server/scripts/backupAnalytics.js`. Дані аналітики: [`server/data/analytics.json`](server/data/analytics.json).
 
 Розгортання
 - Backend: Dockerize або запуск Node (див. `server/src/server.js`). Забезпечити змінні оточення (`DATABASE_URL`, `SESSION_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `ALLOWED_ORIGINS`).
@@ -142,16 +133,6 @@ OpenAPI / API
 - Chat UI: [client/src/components/ChatBot.jsx](client/src/components/ChatBot.jsx)
 - Рекомендації: [client/src/pages/PetRecommendation.jsx](client/src/pages/PetRecommendation.jsx)
 - Adopt detail (фронтенд): [client/src/pages/Adopt/AdoptDetail.jsx](client/src/pages/Adopt/AdoptDetail.jsx)
-
-Додаткові поради
-- Додавати тести для нової логіки (unit / integration).
-- Дотримуватись ESLint/Prettier (конфіги в репозиторії, якщо є).
-- Для проблем з CORS — перевірити `ALLOWED_ORIGINS` в [`server/src/app.js`](server/src/app.js).
-- Для відлагодження аналітики — дивитись `server/logs/` та `server/data/analytics.json`.
-
-Контакти / внесок
-- Процес: fork -> branch -> PR; додати тести для нової логіки.
-- Для питань про архітектуру — подивитись контролери та сервіси, особливо: [`server/src/controllers/analyticsController.js`](server/src/controllers/analyticsController.js), [`server/src/services/analyticsService.js`](server/src/services/analyticsService.js), [`server/src/services/intelligenceEngine.js`](server/src/services/intelligenceEngine.js).
 
 -----
 Цей README цілиться дати швидкий огляд і карту коду — для детальної інформації відкрийте вказані файли.
