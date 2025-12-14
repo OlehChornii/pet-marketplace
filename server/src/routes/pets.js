@@ -1,4 +1,5 @@
 // server/src/routes/pets.js
+console.log('Loading pets routes');
 const express = require('express');
 const router = express.Router();
 const petController = require('../controllers/petController');

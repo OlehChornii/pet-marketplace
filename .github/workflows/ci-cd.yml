@@ -1,0 +1,56 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install client dependencies
+      run: |
+        cd client
+        npm install
+
+    - name: Run client tests
+      run: |
+        cd client
+        npm test -- --watchAll=false
+
+    - name: Build client
+      run: |
+        cd client
+        npm run build
+
+    - name: Install server dependencies
+      run: |
+        cd server
+        npm install
+
+    - name: Run server tests
+      run: |
+        cd server
+        npm test
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker images
+      run: docker-compose build
+
+    - name: Run Docker Compose
+      run: docker-compose up -d

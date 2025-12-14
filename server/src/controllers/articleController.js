@@ -47,7 +47,7 @@ exports.createArticle = async (req, res) => {
     
     const result = await pool.query(
       'INSERT INTO articles (title, category, content, author_id, image_url, published) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [title, category, content, req.user.id, image_url, false] // за замовчуванням не опубліковано
+      [title, category, content, req.user.id, image_url, false]
     );
     
     res.status(201).json(result.rows[0]);

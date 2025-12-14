@@ -260,11 +260,9 @@ const queryValidation = {
 
 module.exports = {
   validateRequest,
-  
   petValidationRules,
   userValidationRules,
   paramValidation,
   queryValidation,
-  
   customValidators
 };

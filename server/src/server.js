@@ -1,9 +1,13 @@
 // server/src/server.js
+console.log('Loading server.js');
 const app = require('./app');
+console.log('App loaded');
 const logger = require('./utils/logger');
 const pool = require('./config/database');
 
 const PORT = process.env.PORT || 5000;
+
+console.log('Starting server on port', PORT);
 
 const server = app.listen(PORT, () => {
   logger.info(`

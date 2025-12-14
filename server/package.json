@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon --watch src --ignore src/data --ignore logs --exec node src/server.js",
+    "development": "npm run dev",
     "test": "jest --detectOpenHandles",
     "test:analytics": "jest tests/analytics.test.js",
     "test:chatbot": "jest tests/chatbot.test.js",

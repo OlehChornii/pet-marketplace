@@ -1,4 +1,5 @@
 // controllers/petController.js
+console.log('Loading petController');
 const pool = require('../config/database');
 
 exports.getAllPets = async (req, res) => {
@@ -96,7 +97,7 @@ exports.getAllPets = async (req, res) => {
       paramCount++;
     }
 
-    let orderClause = 'ORDER BY created_at DESC'; // default
+    let orderClause = 'ORDER BY created_at DESC';
     switch (sort) {
       case 'oldest':
         orderClause = 'ORDER BY created_at ASC';

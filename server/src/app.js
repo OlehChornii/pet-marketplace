@@ -141,7 +141,7 @@ app.get('/api/payments/webhook-status', (req, res) => {
     configured: !!process.env.STRIPE_WEBHOOK_SECRET,
     endpoint: '/api/payments/webhook',
     ready: !!process.env.STRIPE_SECRET_KEY && !!process.env.STRIPE_WEBHOOK_SECRET,
-    info: 'Run: stripe listen --forward-to localhost:5000/api/payments/webhook'
+    info: `Run: stripe listen --forward-to ${process.env.REACT_APP_API_URL}/payments/webhook`
   });
 });
 
